@@ -1,9 +1,10 @@
 with joined as (
     select
         t.visitor_id,
-        t.visit_date::date as visit_date,
+        t.source,
         t.medium as utm_medium,
         t.campaign as utm_campaign,
+        t.visit_date::date as visit_date,
         l.lead_id,
         l.created_at,
         l.amount,
@@ -17,12 +18,13 @@ with joined as (
             partition by t.visitor_id
             order by t.visit_date desc
         ) as rnk
-    from sessions as t
-    left join leads as l
-        on
-            t.visitor_id = l.visitor_id
+    from
+        sessions t
+        left join leads l
+            on t.visitor_id = l.visitor_id
             and t.visit_date <= l.created_at
-    where t.medium <> 'organic'
+    where
+        t.medium <> 'organic'
 ),
 
 seslead as (
