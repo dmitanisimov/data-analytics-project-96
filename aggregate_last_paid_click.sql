@@ -17,15 +17,26 @@ with joined as (
             partition by t.visitor_id
             order by t.visit_date desc
         ) as rnk
-    from sessions t
-        left join leads l on t.visitor_id = l.visitor_id
-            and t.visit_date <= l.created_at
+    from sessions as t
+    left join leads as l
+        on t.visitor_id = l.visitor_id
+        and t.visit_date <= l.created_at
     where t.medium <> 'organic'
 ),
 
 seslead as (
     select
-        *
+        visitor_id,
+        utm_medium,
+        utm_campaign,
+        visit_date,
+        utm_source,
+        lead_id,
+        created_at,
+        amount,
+        closing_reason,
+        status_id,
+        rnk
     from joined
     where rnk = 1
 ),
@@ -77,7 +88,7 @@ costs as (
             utm_campaign,
             daily_spent
         from vk_ads
-    ) ads
+    ) as ads
     group by
         campaign_date::date,
         utm_source,
@@ -95,11 +106,12 @@ select
     g.leads_count,
     g.purchases_count,
     g.revenue
-from grouped g
-    left join costs c on g.visit_date = c.visit_date
-        and g.utm_source = c.utm_source
-        and g.utm_medium = c.utm_medium
-        and g.utm_campaign = c.utm_campaign
+from grouped as g
+left join costs as c
+    on g.visit_date = c.visit_date
+    and g.utm_source = c.utm_source
+    and g.utm_medium = c.utm_medium
+    and g.utm_campaign = c.utm_campaign
 order by
     g.revenue desc nulls last,
     g.visit_date asc,
