@@ -97,10 +97,10 @@ select
     g.revenue
 from grouped as g
 left join costs as c
-    on g.visit_date = c.visit_date
-    and g.utm_source = c.utm_source
-    and g.utm_medium = c.utm_medium
-    and g.utm_campaign = c.utm_campaign
+    on g.visit_date   = c.visit_date
+   and g.utm_source   = c.utm_source
+   and g.utm_medium   = c.utm_medium
+   and g.utm_campaign = c.utm_campaign
 order by
     g.revenue desc nulls last,
     g.visit_date asc,
