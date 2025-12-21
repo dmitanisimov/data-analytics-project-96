@@ -95,10 +95,11 @@ SELECT
     g.revenue
 FROM grouped AS g
 LEFT JOIN costs AS c
-    ON g.visit_date = c.visit_date
-   AND g.utm_source = c.utm_source
-   AND g.utm_medium = c.utm_medium
-   AND g.utm_campaign = c.utm_campaign
+    ON
+        g.visit_date = c.visit_date
+        AND g.utm_source = c.utm_source
+        AND g.utm_medium = c.utm_medium
+        AND g.utm_campaign = c.utm_campaign
 ORDER BY
     g.revenue DESC NULLS LAST,
     g.visit_date ASC,
