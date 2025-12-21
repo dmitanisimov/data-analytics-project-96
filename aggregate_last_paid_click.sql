@@ -24,6 +24,7 @@ WITH joined AS (
             AND t.visit_date <= l.created_at
     WHERE t.medium <> 'organic'
 ),
+    
 seslead AS (
     SELECT
         *
