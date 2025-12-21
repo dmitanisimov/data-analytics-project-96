@@ -19,8 +19,9 @@ WITH joined AS (
         ) AS rnk
     FROM sessions AS t
     LEFT JOIN leads AS l
-        ON t.visitor_id = l.visitor_id
-        AND t.visit_date <= l.created_at
+        ON
+            t.visitor_id = l.visitor_id
+            AND t.visit_date <= l.created_at
     WHERE t.medium <> 'organic'
 ),
 seslead AS (
