@@ -1,27 +1,27 @@
-with joined as (
-    select
+WITH joined AS (
+    SELECT
         t.visitor_id,
-        t.visit_date::date as visit_date,
-        case
-            when t.source ilike 'vk%' then 'vk'
-            else t.source
-        end as utm_source,
-        t.medium as utm_medium,
-        t.campaign as utm_campaign,
+        t.medium AS utm_medium,
+        t.campaign AS utm_campaign,
         l.lead_id,
         l.created_at,
         l.amount,
         l.closing_reason,
         l.status_id,
-        row_number() over (
-            partition by t.visitor_id
-            order by t.visit_date desc
-        ) as rnk
-    from sessions as t
-    left join leads as l
-        on t.visitor_id = l.visitor_id
-        and t.visit_date <= l.created_at
-    where t.medium <> 'organic'
+        t.visit_date::date AS visit_date,
+        CASE
+            WHEN t.source ILIKE 'vk%' THEN 'vk'
+            ELSE t.source
+        END AS utm_source,
+        ROW_NUMBER() OVER (
+            PARTITION BY t.visitor_id
+            ORDER BY t.visit_date DESC
+        ) AS rnk
+    FROM sessions AS t
+    LEFT JOIN leads AS l
+        ON t.visitor_id = l.visitor_id
+        AND t.visit_date <= l.created_at
+    WHERE t.medium <> 'organic'
 ),
 seslead as (
     select
