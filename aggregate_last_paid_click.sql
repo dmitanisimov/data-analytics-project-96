@@ -1,7 +1,7 @@
 with joined as (
     select
-        t.visitor_id,
         t.visit_date::date as visit_date,
+        t.visitor_id,
         case
             when t.source ilike 'vk%' then 'vk'
             else t.source
@@ -19,8 +19,10 @@ with joined as (
         ) as rnk
     from sessions as t
     left join leads as l
-        on t.visitor_id = l.visitor_id
-        and t.visit_date <= l.created_at
+        on
+            t.visitor_id = l.visitor_id
+        and
+            t.visit_date <= l.created_at
     where t.medium <> 'organic'
 ),
 
