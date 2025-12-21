@@ -17,7 +17,8 @@ WITH joined AS (
             PARTITION BY t.visitor_id
             ORDER BY t.visit_date DESC
         ) AS rnk
-    FROM sessions AS t
+    FROM
+        sessions AS t
     LEFT JOIN leads AS l
         ON
             t.visitor_id = l.visitor_id
