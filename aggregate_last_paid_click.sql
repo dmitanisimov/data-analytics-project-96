@@ -18,10 +18,10 @@ WITH joined AS (
             ORDER BY t.visit_date DESC
         ) AS rnk
     FROM sessions AS t
-        LEFT JOIN leads AS l
-            ON
-                t.visitor_id = l.visitor_id
-                AND t.visit_date <= l.created_at
+    LEFT JOIN leads AS l
+        ON
+            t.visitor_id = l.visitor_id
+            AND t.visit_date <= l.created_at
     WHERE t.medium <> 'organic'
 ),
 
