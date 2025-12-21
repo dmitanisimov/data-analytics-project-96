@@ -26,9 +26,7 @@ WITH joined AS (
 ),
     
 seslead AS (
-    SELECT
-        *
-    FROM joined
+    SELECT * FROM joined
     WHERE rnk = 1
 ),
 
