@@ -24,7 +24,7 @@ WITH joined AS (
             AND t.visit_date <= l.created_at
     WHERE t.medium <> 'organic'
 ),
-    
+
 seslead AS (
     SELECT * FROM joined
     WHERE rnk = 1
@@ -39,12 +39,10 @@ grouped AS (
         COUNT(visitor_id) AS visitors_count,
         COUNT(DISTINCT lead_id) AS leads_count,
         COUNT(lead_id) FILTER (
-            WHERE closing_reason = 'Успешно реализовано'
-               OR status_id = 142
+            WHERE closing_reason = 'Успешно реализовано' OR status_id = 142
         ) AS purchases_count,
         SUM(amount) FILTER (
-            WHERE closing_reason = 'Успешно реализовано'
-               OR status_id = 142
+            WHERE closing_reason = 'Успешно реализовано' OR status_id = 142
         ) AS revenue
     FROM seslead
     GROUP BY
