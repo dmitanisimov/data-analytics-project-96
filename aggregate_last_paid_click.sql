@@ -1,83 +1,91 @@
-WITH joined AS (
-    SELECT
+with joined as (
+    select
         t.visitor_id,
-        t.visit_date::date AS visit_date,
-        CASE
-            WHEN t.source ILIKE 'vk%' THEN 'vk'
-            ELSE t.source
-        END AS utm_source,
-        t.medium AS utm_medium,
-        t.campaign AS utm_campaign,
+        t.visit_date::date as visit_date,
+        case
+            when t.source ilike 'vk%' then 'vk'
+            else t.source
+        end as utm_source,
+        t.medium as utm_medium,
+        t.campaign as utm_campaign,
         l.lead_id,
         l.created_at,
         l.amount,
         l.closing_reason,
         l.status_id,
-        ROW_NUMBER() OVER (
-            PARTITION BY t.visitor_id
-            ORDER BY t.visit_date DESC
-        ) AS rnk
-    FROM sessions t
-    LEFT JOIN leads l
-      ON t.visitor_id = l.visitor_id
-     AND t.visit_date <= l.created_at
-    WHERE t.medium <> 'organic'
+        row_number() over (
+            partition by t.visitor_id
+            order by t.visit_date desc
+        ) as rnk
+    from sessions as t
+    left join leads as l
+        on t.visitor_id = l.visitor_id
+        and t.visit_date <= l.created_at
+    where t.medium <> 'organic'
 ),
 
-SesLead AS (
-    SELECT *
-    FROM joined
-    WHERE rnk = 1
+seslead as (
+    select *
+    from joined
+    where rnk = 1
 ),
 
-grouped AS (
-    SELECT
+grouped as (
+    select
         visit_date,
         utm_source,
         utm_medium,
         utm_campaign,
-
-        COUNT(visitor_id) AS visitors_count,
-
-        COUNT(DISTINCT lead_id) AS leads_count,
-
-        COUNT(lead_id) FILTER (
-            WHERE closing_reason = 'Успешно реализовано'
-               OR status_id = 142
-        ) AS purchases_count,
-
-        SUM(amount) FILTER (
-            WHERE closing_reason = 'Успешно реализовано'
-               OR status_id = 142
-        ) AS revenue
-    FROM SesLead
-    GROUP BY
+        count(visitor_id) as visitors_count,
+        count(distinct lead_id) as leads_count,
+        count(lead_id) filter (
+            where closing_reason = 'Успешно реализовано'
+               or status_id = 142
+        ) as purchases_count,
+        sum(amount) filter (
+            where closing_reason = 'Успешно реализовано'
+               or status_id = 142
+        ) as revenue
+    from seslead
+    group by
         visit_date,
         utm_source,
         utm_medium,
         utm_campaign
 ),
 
-costs AS (
-    SELECT
-        campaign_date::date AS visit_date,
+costs as (
+    select
+        campaign_date::date as visit_date,
         utm_source,
         utm_medium,
         utm_campaign,
-        SUM(daily_spent) AS total_cost
-    FROM (
-        SELECT campaign_date, utm_source, utm_medium, utm_campaign, daily_spent FROM ya_ads
-        UNION ALL
-        SELECT campaign_date, utm_source, utm_medium, utm_campaign, daily_spent FROM vk_ads
-    ) ads
-    GROUP BY
+        sum(daily_spent) as total_cost
+    from (
+        select
+            campaign_date,
+            utm_source,
+            utm_medium,
+            utm_campaign,
+            daily_spent
+        from ya_ads
+        union all
+        select
+            campaign_date,
+            utm_source,
+            utm_medium,
+            utm_campaign,
+            daily_spent
+        from vk_ads
+    ) as ads
+    group by
         campaign_date::date,
         utm_source,
         utm_medium,
         utm_campaign
 )
 
-SELECT
+select
     g.visit_date,
     g.visitors_count,
     g.utm_source,
@@ -87,16 +95,16 @@ SELECT
     g.leads_count,
     g.purchases_count,
     g.revenue
-FROM grouped g
-LEFT JOIN costs c
-  ON g.visit_date   = c.visit_date
- AND g.utm_source   = c.utm_source
- AND g.utm_medium   = c.utm_medium
- AND g.utm_campaign = c.utm_campaign
-ORDER BY
-    g.revenue DESC NULLS LAST,
-    g.visit_date ASC,
-    g.visitors_count DESC,
-    g.utm_source ASC,
-    g.utm_medium ASC,
-    g.utm_campaign ASC;
+from grouped as g
+left join costs as c
+    on g.visit_date = c.visit_date
+    and g.utm_source = c.utm_source
+    and g.utm_medium = c.utm_medium
+    and g.utm_campaign = c.utm_campaign
+order by
+    g.revenue desc nulls last,
+    g.visit_date asc,
+    g.visitors_count desc,
+    g.utm_source asc,
+    g.utm_medium asc,
+    g.utm_campaign asc;
