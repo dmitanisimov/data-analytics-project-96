@@ -22,7 +22,7 @@ with joined as (
         on t.visitor_id = l.visitor_id
         and t.visit_date <= l.created_at
     where t.medium <> 'organic'
-)
+),
 seslead as (
     select
         *
