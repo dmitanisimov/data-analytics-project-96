@@ -18,8 +18,8 @@ with joined as (
             partition by t.visitor_id
             order by t.visit_date desc
         ) as rnk
-    from sessions t
-    left join leads l
+    from sessions as t
+    left join leads as l
         on
             t.visitor_id = l.visitor_id
             and t.visit_date <= l.created_at
@@ -112,4 +112,3 @@ order by
     g.utm_source asc,
     g.utm_medium asc,
     g.utm_campaign asc;
-
