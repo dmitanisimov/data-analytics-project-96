@@ -1,7 +1,7 @@
 with joined as (
     select
-        t.visit_date :: date as visit_date,
         t.visitor_id,
+        t.visit_date::date as visit_date,
         case
             when t.source ilike 'vk%' then 'vk'
             else t.source
@@ -15,16 +15,14 @@ with joined as (
         l.status_id,
         row_number() over (
             partition by t.visitor_id
-            order by
-                t.visit_date desc
+            order by t.visit_date desc
         ) as rnk
-    from
-        sessions as t
-        left join leads as l on t.visitor_id = l.visitor_id
+    from sessions as t
+    left join leads as l
+        on t.visitor_id = l.visitor_id
         and t.visit_date <= l.created_at
-    where
-        t.medium <> 'organic'
-),
+    where t.medium <> 'organic'
+)
 seslead as (
     select
         *
