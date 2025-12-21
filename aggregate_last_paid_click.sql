@@ -23,75 +23,69 @@ WITH joined AS (
         AND t.visit_date <= l.created_at
     WHERE t.medium <> 'organic'
 ),
-seslead as (
-    select
+seslead AS (
+    SELECT
         *
-    from
-        joined
-    where
-        rnk = 1
+    FROM joined
+    WHERE rnk = 1
 ),
-grouped as (
-    select
+
+grouped AS (
+    SELECT
         visit_date,
         utm_source,
         utm_medium,
         utm_campaign,
-        count(visitor_id) as visitors_count,
-        count(distinct lead_id) as leads_count,
-        count(lead_id) filter (
-            where
-                closing_reason = 'Успешно реализовано'
-                or status_id = 142
-        ) as purchases_count,
-        sum(amount) filter (
-            where
-                closing_reason = 'Успешно реализовано'
-                or status_id = 142
-        ) as revenue
-    from
-        seslead
-    group by
+        COUNT(visitor_id) AS visitors_count,
+        COUNT(DISTINCT lead_id) AS leads_count,
+        COUNT(lead_id) FILTER (
+            WHERE closing_reason = 'Успешно реализовано'
+               OR status_id = 142
+        ) AS purchases_count,
+        SUM(amount) FILTER (
+            WHERE closing_reason = 'Успешно реализовано'
+               OR status_id = 142
+        ) AS revenue
+    FROM seslead
+    GROUP BY
         visit_date,
         utm_source,
         utm_medium,
         utm_campaign
 ),
-costs as (
-    select
-        campaign_date :: date as visit_date,
+
+costs AS (
+    SELECT
+        campaign_date::date AS visit_date,
         utm_source,
         utm_medium,
         utm_campaign,
-        sum(daily_spent) as total_cost
-    from
-        (
-            select
-                campaign_date,
-                utm_source,
-                utm_medium,
-                utm_campaign,
-                daily_spent
-            from
-                ya_ads
-            union
-            all
-            select
-                campaign_date,
-                utm_source,
-                utm_medium,
-                utm_campaign,
-                daily_spent
-            from
-                vk_ads
-        ) as ads
-    group by
-        campaign_date :: date,
+        SUM(daily_spent) AS total_cost
+    FROM (
+        SELECT
+            campaign_date,
+            utm_source,
+            utm_medium,
+            utm_campaign,
+            daily_spent
+        FROM ya_ads
+        UNION ALL
+        SELECT
+            campaign_date,
+            utm_source,
+            utm_medium,
+            utm_campaign,
+            daily_spent
+        FROM vk_ads
+    ) AS ads
+    GROUP BY
+        campaign_date::date,
         utm_source,
         utm_medium,
         utm_campaign
 )
-select
+
+SELECT
     g.visit_date,
     g.visitors_count,
     g.utm_source,
@@ -101,16 +95,16 @@ select
     g.leads_count,
     g.purchases_count,
     g.revenue
-from
-    grouped as g
-    left join costs as c on g.visit_date = c.visit_date
-    and g.utm_source = c.utm_source
-    and g.utm_medium = c.utm_medium
-    and g.utm_campaign = c.utm_campaign
-order by
-    g.revenue desc nulls last,
-    g.visit_date asc,
-    g.visitors_count desc,
-    g.utm_source asc,
-    g.utm_medium asc,
-    g.utm_campaign asc;
+FROM grouped AS g
+LEFT JOIN costs AS c
+    ON g.visit_date = c.visit_date
+   AND g.utm_source = c.utm_source
+   AND g.utm_medium = c.utm_medium
+   AND g.utm_campaign = c.utm_campaign
+ORDER BY
+    g.revenue DESC NULLS LAST,
+    g.visit_date ASC,
+    g.visitors_count DESC,
+    g.utm_source ASC,
+    g.utm_medium ASC,
+    g.utm_campaign ASC;
